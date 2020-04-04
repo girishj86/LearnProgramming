@@ -4,29 +4,32 @@ import java.util.concurrent.LinkedBlockingQueue;
 public class ThreadPoolDemo {
 
     public static void main(String[] args) {
-        CustomThreadPool threadPool = new CustomThreadPool(10);
-        for(int i=1;i<=10;i++){
-            Task task = new Task("Task"+i);
+
+        //Create custome threadpool with initial capacity of 2 worker threads
+        CustomThreadPool threadPool = new CustomThreadPool(2);
+        //create 5 tasks and submit to thread pool to work
+        for (int i = 1; i <= 5; i++) {
+            Task task = new Task("Task" + i);
             threadPool.submit(task);
         }
     }
-
 }
 
 class CustomThreadPool {
 
-    int capacity = 5;
+    int capacity;
     BlockingQueue<Task> queue = new LinkedBlockingQueue<Task>();
 
-    CustomThreadPool(int capacity){
+    CustomThreadPool(int capacity) {
         this.capacity = capacity;
-        for(int i=1;i<=capacity;i++){
-            CustomThread worker = new CustomThread(queue,"Worker"+i);
+        for (int i = 1; i <= capacity; i++) {
+            CustomThread worker = new CustomThread(queue, "Worker" + i);
             worker.start();
         }
     }
 
-    public void submit(Task task){
+    //add tasks to queue to be consumed by worker threads
+    public void submit(Task task) {
         queue.offer(task);
     }
 }
@@ -35,17 +38,18 @@ class CustomThread extends Thread {
 
     BlockingQueue<Task> queue;
 
-    CustomThread(BlockingQueue queue, String name){
+    CustomThread(BlockingQueue queue, String name) {
         this.queue = queue;
         this.setName(name);
     }
 
     @Override
     public void run() {
-        while(true){
-            if(!this.queue.isEmpty()){
+        //keep each thread running always and polling the queue for new task
+        while (true) {
+            if (!this.queue.isEmpty()) {
                 Task task = queue.poll();
-                if(task != null) {
+                if (task != null) {
                     task.execute();
                 }
             }
@@ -57,11 +61,11 @@ class Task {
 
     String name;
 
-    Task(String name){
+    Task(String name) {
         this.name = name;
     }
 
     public void execute() {
-        System.out.println(name+" executed by "+Thread.currentThread().getName());
+        System.out.println(name + " executed by " + Thread.currentThread().getName());
     }
 }

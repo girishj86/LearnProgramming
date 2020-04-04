@@ -6,6 +6,7 @@ public class OddEven2Threads {
 
     public static void main(String[] args) {
         Object lock = new Object();
+        //StringBuilder is used because String is immutable
         StringBuilder flag = new StringBuilder("Even");
         Thread threadEven = new ThreadEven(lock, flag);
         Thread threadOdd = new ThreadOdd(lock, flag);
@@ -37,6 +38,7 @@ class ThreadEven extends Thread {
                 }
                 System.out.println(counter + " printed by " + Thread.currentThread().getName());
                 counter = counter + 2;
+                //set new flag
                 flag.setLength(0);
                 flag.append("Odd");
                 lock.notifyAll();
