@@ -1,14 +1,9 @@
-import java.util.HashMap;
-import java.util.Map;
-import java.util.concurrent.locks.ReentrantLock;
-
 public class OddEven2Threads {
 
     public static void main(String[] args) {
-        Object lock = new Object();
-        StringBuilder flag = new StringBuilder("Even");
-        Thread threadEven = new ThreadEven(lock, flag);
-        Thread threadOdd = new ThreadOdd(lock, flag);
+        LockObject lock = new LockObject("even");
+        Thread threadEven = new ThreadEven(lock);
+        Thread threadOdd = new ThreadOdd(lock);
         threadEven.setName("EvenThread");
         threadEven.start();
         threadOdd.setName("OddThread");
@@ -16,19 +11,24 @@ public class OddEven2Threads {
     }
 }
 
+class LockObject {
+    String condition;
+    public LockObject(String condition) {
+        this.condition = condition;
+    }
+}
+
 class ThreadEven extends Thread {
     int counter = 0;
-    Object lock;
-    StringBuilder flag;
-    ThreadEven(Object lock, StringBuilder flag) {
+    LockObject lock;
+    ThreadEven(LockObject lock) {
         this.lock = lock;
-        this.flag = flag;
     }
     @Override
     public void run() {
         while (counter <= 20) {
             synchronized (lock) {
-                while (flag.toString().equals("Odd")) {
+                while (lock.condition.equals("Odd")) {
                     try {
                         lock.wait();
                     } catch (InterruptedException e) {
@@ -37,8 +37,7 @@ class ThreadEven extends Thread {
                 }
                 System.out.println(counter + " printed by " + Thread.currentThread().getName());
                 counter = counter + 2;
-                flag.setLength(0);
-                flag.append("Odd");
+                lock.condition = "Odd";
                 lock.notifyAll();
             }
         }
@@ -47,17 +46,15 @@ class ThreadEven extends Thread {
 
 class ThreadOdd extends Thread {
     int counter = 1;
-    Object lock;
-    StringBuilder flag;
-    ThreadOdd(Object lock, StringBuilder flag) {
+    LockObject lock;
+    ThreadOdd(LockObject lock) {
         this.lock = lock;
-        this.flag = flag;
     }
     @Override
     public void run() {
         while (counter <= 20) {
             synchronized (lock) {
-                while (flag.toString().equals("Even")) {
+                while (lock.condition.equals("Even")) {
                     try {
                         lock.wait();
                     } catch (InterruptedException e) {
@@ -66,8 +63,7 @@ class ThreadOdd extends Thread {
                 }
                 System.out.println(counter + " printed by " + Thread.currentThread().getName());
                 counter = counter + 2;
-                flag.setLength(0);
-                flag.append("Even");
+                lock.condition = "Even";
                 lock.notifyAll();
             }
         }
